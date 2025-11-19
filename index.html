@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>I like you, do you like me?</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+            font-family: 'Segoe UI', sans-serif;
+            position: relative;
+        }
+
+        .center-box {
+            position: absolute;
+            z-index: 10;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem 3rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 24px rgba(119, 0, 43, 0.04);
+            min-width: 350px;
+            max-width: 900px;
+            width: 650px;
+            box-sizing: border-box;
+            transition: width 0.3s;
+        }
+
+        .question,
+        .romantic {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            color: #fe346e;
+            word-break: break-word;
+        }
+
+        .romantic {
+            color: #b62962;
+            animation: fadeIn 2s forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-group button {
+            font-size: 1.3rem;
+            outline: none;
+            border: none;
+            margin: 0 1rem 1rem 1rem;
+            padding: 0.75rem 2.5rem;
+            background: #fe346e;
+            color: #fff;
+            border-radius: 2rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(254, 52, 110, 0.16);
+            transition: background 0.2s, transform 0.2s;
+            min-width: 110px;
+        }
+
+        .btn-group button:hover {
+            background: #b62b55;
+            transform: scale(1.06);
+        }
+
+        #hearts-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+        }
+
+        @media (max-width: 900px) {
+            .center-box {
+                width: 96vw;
+                max-width: 96vw;
+                min-width: unset;
+                padding: 2rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .center-box {
+                padding: 1.2rem .3rem;
+                width: 99vw;
+                max-width: 99vw;
+            }
+
+            .question,
+            .romantic {
+                font-size: 1.3rem;
+                margin-bottom: 1rem;
+            }
+
+            .btn-group button {
+                font-size: 1.1rem;
+                padding: 0.55rem 1rem;
+                margin: 0 0.4rem 0.7rem 0.4rem;
+                min-width: 88px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .center-box {
+                padding: 0.7rem 0.09rem;
+                width: 100vw;
+                max-width: unset;
+            }
+
+            .question,
+            .romantic {
+                font-size: 1.04rem;
+                margin-bottom: 0.6rem;
+            }
+
+            .btn-group button {
+                font-size: 0.99rem;
+                padding: 0.34rem 0.7rem;
+                min-width: 75px;
+                margin: 0 0.15rem .5rem 0.15rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="hearts-canvas"></canvas>
+    <div class="center-box">
+        <div class="question" id="mainQuestion">I like you, do you like me?</div>
+        <div class="btn-group" id="btnGroup">
+            <button id="yesBtn">Yes</button>
+            <button id="noBtn">No</button>
+        </div>
+    </div>
+
+    <script>
+        // Hearts animation
+        const canvas = document.getElementById('hearts-canvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+        window.addEventListener('resize', () => {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = W;
+            canvas.height = H;
+        });
+
+        function randomRange(a, b) { return a + (b - a) * Math.random(); }
+        const heartShape = [];
+        for (let t = 0; t < Math.PI * 2; t += 0.05) {
+            let x = 16 * Math.pow(Math.sin(t), 3);
+            let y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+            heartShape.push({ x, y });
+        }
+        function drawHeart(x, y, size, angle, color = '#fe346e', alpha = 1) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.scale(size, size);
+            ctx.beginPath();
+            ctx.moveTo(heartShape[0].x, heartShape[0].y);
+            for (const point of heartShape) {
+                ctx.lineTo(point.x, point.y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.shadowColor = '#fc9fc5';
+            ctx.shadowBlur = 8;
+            ctx.fill();
+            ctx.restore();
+            ctx.globalAlpha = 1;
+        }
+        const hearts = [];
+        const heartColors = ['#fe346e', '#fc98be', '#fca4c3', '#ffc0cb'];
+        const dirs = [
+            { x: 1, y: 1 }, { x: -1, y: 1 }, { x: 1, y: -1 }, { x: -1, y: -1 },
+            { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }
+        ];
+        function createHeart() {
+            let size = randomRange(0.8, 1.7);
+            let dir = dirs[Math.floor(Math.random() * dirs.length)];
+            let angle = randomRange(0, Math.PI * 2);
+            let startX = randomRange(0, W);
+            let startY = randomRange(0, H);
+            let spd = randomRange(0.6, 1.8);
+            let opacity = randomRange(0.35, 0.85);
+            let color = heartColors[Math.floor(Math.random() * heartColors.length)];
+            hearts.push({
+                x: startX, y: startY, size: size * randomRange(16, 34),
+                dx: dir.x * spd * randomRange(0.8, 1.3),
+                dy: dir.y * spd * randomRange(0.8, 1.3),
+                rot: angle, dr: randomRange(-0.05, 0.05),
+                color, alpha: opacity
+            });
+        }
+        for (let i = 0; i < 32; i++) createHeart();
+        function updateHearts() {
+            for (let h of hearts) {
+                h.x += h.dx; h.y += h.dy; h.rot += h.dr;
+                if (h.x < -40) h.x = W + 40;
+                if (h.x > W + 40) h.x = -40;
+                if (h.y < -40) h.y = H + 40;
+                if (h.y > H + 40) h.y = -40;
+            }
+        }
+        function drawHearts() {
+            ctx.clearRect(0, 0, W, H);
+            for (let h of hearts) {
+                drawHeart(h.x, h.y, h.size / 32, h.rot, h.color, h.alpha);
+            }
+        }
+        function animate() {
+            updateHearts();
+            drawHearts();
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Button logic
+        const mainQuestion = document.getElementById('mainQuestion');
+        const btnGroup = document.getElementById('btnGroup');
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+
+        yesBtn.onclick = () => {
+            mainQuestion.classList.remove('question');
+            mainQuestion.classList.add('romantic');
+            mainQuestion.innerHTML = "You’re my favorite notification. 💖<br>Let’s make every moment special together!";
+            btnGroup.style.display = "none";
+        };
+
+        noBtn.onclick = () => {
+            mainQuestion.innerHTML = `You don't have any other choice <span style="font-size:2rem;">🔪🩸</span>`;
+            noBtn.style.display = "none";
+            yesBtn.innerText = "Yes";
+        };
+    </script>
+</body>
+
+</html>
